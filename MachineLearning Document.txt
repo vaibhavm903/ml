@@ -1,0 +1,1053 @@
+
+
+Model Evaluation Classifiaction:
+--------------------------------------------------------
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import recall_score
+from sklearn.metrics import precision_score
+from sklearn.metrics import f1_score
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import classification_report
+
+print(confusion_matrix(eval_data['y_test'], eval_data['y_pred']))
+print(accuracy_score(eval_data['y_test'], eval_data['y_pred']))
+print(recall_score(eval_data['y_test'], eval_data['y_pred'], pos_label=0))
+print(precision_score(eval_data['y_test'], eval_data['y_pred'], pos_label=0))
+print(f1_score(eval_data['y_test'], eval_data['y_pred'], pos_label=0)) #F1 Score for y_pred 0
+print(classification_report(eval_data['y_test'], eval_data['y_pred']))
+
+ROC AUC:
+--------------------------------------------------------
+from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_curve
+
+print(roc_auc_score(comp_prob['y_test'], comp_prob['yprob_1']))
+
+Regression:
+--------------------------------------------------------
+from sklearn.metrics import mean_squared_error, r2_score
+
+mean_squared_error(y_test, y_pred)
+r2_score(y_test, y_pred)
+
+Dummies:
+-----------------------
+dum = pd.get_dummies(telecom)
+
+SimpleImputer
+----------------------
+from sklearn.impute import SimpleImputer
+imputer = SimpleImputer(strategy = 'mean')
+imputer.fit_transform(job)
+
+Scaling
+----------------------
+from sklearn.preprocessing import MinMaxScaler
+mm = MinMaxScaler()
+mm_scl = mm.fit_transform(data)
+df=pd.DataFrame(mm_scl, columns= data.columns, index=data.index)
+
+train_test_split:
+-----------------------------------
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, stratify = y ,random_state=2023, test_size=0.3)
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Label Encoder for Multiclass:
+-------------------------------
+le = LabelEncoder()
+le_y = le.fit_transform(y)
+
+KFolde CV:
+---------------------------
+from sklearn.model_selection import StratifiedKFold, KFold, cross_val_score
+
+
+kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=2023) # Classification
+kfold = KFold(n_splits=5, shuffle=True, random_state=2023) # Regressor
+
+
+
+============================================KNN Classifiers========================================
+
+from sklearn.neighbors import KNeighborsClassifier
+
+knn = KNeighborsClassifier(n_neighbors=5)
+knn.fit(X_train, y_train)
+y_pred = knn.predict(X_scl_tst)
+y_pred_proba = knn.predict_proba(X_test)
+
+Using Pipeline
+---------------
+Pipeline:
+-----------------------
+from sklearn.pipeline import Pipeline
+pipe = Pipeline([("STD", scaler), ('KNN', knn)])
+
+Using GridSearch CV
+------------------------------
+from sklearn.model_selection import GridSearchCV
+
+kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=2023)
+
+knn = KNeighborsClassifier()
+scaler = StandardScaler()
+pipe = Pipeline([('STD', scaler), ('KNN', knn)])
+
+Ks = np.arange(1, 21, 2)
+
+params = {'KNN__n_neighbors': Ks}
+gcv = GridSearchCV(pipe, param_grid=params, cv=kfold, scoring= 'roc_auc')
+gcv.fit(X,y)
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+============================================KNN Regressor========================================
+from sklearn.neighbors import KNeighborsRegressor
+ks = np.arange(1,11)
+knn = KNeighborsRegressor()
+
+scaler = StandardScaler()
+pipe = Pipeline([('STD', scaler), ('KNN', knn)])
+
+params = {'KNN__n_neighbors': ks}
+gcv = GridSearchCV(pipe, param_grid=params, cv=kfold, scoring= 'roc_auc')
+gcv.fit(X,y)
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+====================================Naive Bayes=================================================
+
+Bernaulis Classifiers
+---------------------------------------
+from sklearn.naive_bayes import BernoulliNB
+from sklearn.model_selection import StratifiedKFold, cross_val_score
+from sklearn.preprocessing import StandardScaler
+
+nb = BernoulliNB()
+kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=2023)
+results = cross_val_score(nb, X, y, cv=kfold, scoring='roc_auc')
+print(f"Result Mean(Cross Validation Score):: {results.mean():.3f}")
+
+Gaussian NB
+-----------------------------------------
+from sklearn.naive_bayes import GaussianNB
+
+from sklearn.model_selection import StratifiedKFold, cross_val_score
+from sklearn.preprocessing import StandardScaler
+
+nb = GaussianNB()
+kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=2023)
+results = cross_val_score(nb, X, y, cv=kfold, scoring='roc_auc')
+print(f"Result Mean(Cross Validation Score):: {results.mean():.3f}")
+
+==============================Discriminate Analysis===========================================================
+
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
+
+## Linear Discriminant Analysis (LDA)
+---------------------------------------------
+
+lda = LinearDiscriminantAnalysis()
+lda.fit(X_train,y_train)
+
+y_pred = lda.predict(X_test)
+print(f"Accuracy Score:: {accuracy_score(y_test, y_pred)}")
+
+y_pred_prob = lda.predict_proba(X_test)[:,1]
+print(f"ROC Score:: {roc_auc_score(y_test, y_pred_prob):.3f}")
+print(f"Log Loss:: {log_loss(y_test, y_pred_prob):.3f}")
+
+## Quadratic Discriminant Analysis (QDA)
+----------------------------------------
+
+qda = QuadraticDiscriminantAnalysis()
+qda.fit(X_train,y_train)
+
+y_pred = qda.predict(X_test)
+print(f"Accuracy Score:: {accuracy_score(y_test, y_pred)}")
+
+y_pred_prob = qda.predict_proba(X_test)[:,1]
+print(f"ROC Score:: {roc_auc_score(y_test, y_pred_prob):.3f}")
+print(f"Log Loss:: {log_loss(y_test, y_pred_prob):.3f}")
+
+### With KFold
+-------------------------------------
+
+from sklearn.model_selection import StratifiedKFold, cross_val_score
+
+lda = LinearDiscriminantAnalysis()
+kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=2023)
+results = cross_val_score(lda, X, y, cv=kfold, scoring='neg_log_loss')
+print(f"Result Mean(Cross Validation Score):: {results.mean():.3f}")
+
+qda = QuadraticDiscriminantAnalysis()
+kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=2023)
+results = cross_val_score(qda, X, y, cv=kfold, scoring='neg_log_loss')
+print(f"Result Mean(Cross Validation Score):: {results.mean():.3f}")
+
+
+========================================Decision Tree====================================================
+
+Decision Tree Classifier:
+--------------------------------------------------
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.pipeline import Pipeline
+from sklearn import tree
+
+dtc= DecisionTreeClassifier(random_state=2023)
+kfold = StratifiedKFold(n_splits= 5, shuffle = True, random_state=2023)
+
+params = { 'max_depth': [None, 3, 4, 5],
+          'min_samples_split':[2, 5, 10],
+          'min_samples_leaf':[1, 4, 10]
+}
+
+gcv = GridSearchCV(dtc, param_grid=params, cv=kfold, scoring='roc_auc')
+gcv.fit(X, y)
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+best_model = gcv.best_estimator_
+plt.figure(figsize = (70,15))
+tree.plot_tree(best_model, feature_names = X.columns, class_names = ['No', 'Yes'], filled = True, fontsize = 22)  # Tree Plot
+
+imps = best_model.feature_importances_
+cols = X.columns
+plt.figure(figsize = (16,16))
+plt.barh(cols, imps)
+plt.title("Features Importance Plot")
+plt.show()
+
+Decision Tree Regressor:
+-----------------------------------------------------
+dtr= DecisionTreeRegressor(random_state=2023)
+kfold = KFold(n_splits= 5, shuffle = True, random_state=2023)
+
+params = { 'max_depth': [None, 3, 4, 5],
+          'min_samples_split':[2, 5, 10],
+          'min_samples_leaf':[1, 4, 10]
+}
+
+gcv = GridSearchCV(dtr, param_grid=params, cv=kfold, scoring='r2')
+gcv.fit(X, y)
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+======================================================Support Vector Machine==================================
+
+import pandas as pd
+from sklearn.svm import SVC
+from sklearn.model_selection import StratifiedKFold, GridSearchCV, cross_val_score
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+
+from sklearn.preprocessing import MinMaxScaler
+
+
+### Linear
+-----------------------------------
+
+kfold = StratifiedKFold(n_splits= 5, shuffle = True, random_state=2023)
+
+minmaxscaler = MinMaxScaler()
+svm= SVC(kernel ='linear')
+params = { 'SVM__C': np.linspace(0.1,10,15)}
+pipe = Pipeline([('SCL', minmaxscaler),('SVM', svm)])
+gcv = GridSearchCV(pipe, param_grid=params, cv=kfold, scoring='roc_auc')
+gcv.fit(X, y)
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+### Polynomial Kernel
+--------------------------------------
+
+svm= SVC(kernel ='poly')
+minmaxscaler = MinMaxScaler()
+params = { 'SVM__C': np.linspace(0.1,10,20),
+          'SVM__degree':[2,3,4],
+          'SVM__coef0': np.linspace(0,10,20)}
+pipe = Pipeline([('SCL', minmaxscaler),('SVM', svm)])
+gcv = GridSearchCV(pipe, param_grid=params, cv=kfold, scoring='roc_auc')
+gcv.fit(X, y)
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+### Radial Kernel
+-------------------------------------
+
+svm= SVC(kernel ='rbf')
+minmaxscaler = MinMaxScaler()
+params = { 'SVM__C': np.linspace(0.1,10,20),
+          'SVM__gamma':np.linspace(0,10,20)
+} 
+pipe = Pipeline([('SCL', minmaxscaler),('SVM', svm)])
+gcv = GridSearchCV(pipe, param_grid=params, cv=kfold, scoring='roc_auc')
+gcv.fit(X, y)
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+------------Multiclass SVC-------------------------
+
+### Linear
+
+kfold = StratifiedKFold(n_splits= 5, shuffle = True, random_state=2023)
+
+minmaxscaler = MinMaxScaler()
+svm= SVC(kernel ='linear', probability=True, random_state=2023)
+params = { 'SVM__C': np.linspace(0.1,10,20),
+          'SVM__decision_function_shape': ['ovo', 'ovr']}
+pipe = Pipeline([('SCL', minmaxscaler),('SVM', svm)])
+gcv = GridSearchCV(pipe, param_grid=params, cv=kfold, scoring='neg_log_loss')
+gcv.fit(X, le_y)
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+### Polynomial
+
+svm= SVC(kernel ='poly',probability=True, random_state=2023)
+minmaxscaler = MinMaxScaler()
+params = { 'SVM__C': np.linspace(0.1,10,20),
+          'SVM__degree':[2,3,4],
+          'SVM__coef0': np.linspace(0,10,20),
+          'SVM__decision_function_shape': ['ovo', 'ovr']}
+pipe = Pipeline([('SCL', minmaxscaler),('SVM', svm)])
+gcv = GridSearchCV(pipe, param_grid=params, cv=kfold, scoring='neg_log_loss')
+gcv.fit(X, le_y)
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+### Radial
+
+svm= SVC(kernel ='rbf', probability=True, random_state=2023)
+minmaxscaler = MinMaxScaler()
+params = { 'SVM__C': np.linspace(0.1,10,20),
+          'SVM__gamma':np.linspace(0,10,20),
+          'SVM__decision_function_shape': ['ovo', 'ovr']
+} 
+pipe = Pipeline([('SCL', minmaxscaler),('SVM', svm)])
+gcv = GridSearchCV(pipe, param_grid=params, cv=kfold, scoring='neg_log_loss')
+gcv.fit(X, y)
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+
+=============================================Regression================================================
+
+Linear Regression:
+------------------------------------------
+from sklearn.linear_model import LinearRegression
+
+lr.fit(X,y)
+print(lr.coef_)
+print(lr.intercept_)
+
+lr = LinearRegression()
+
+lr.fit(X_train, y_train)
+y_pred = lr.predict(X_test)
+
+lr = LinearRegression()
+kfold = KFold(n_splits=5, shuffle=True, random_state=2023)
+results = cross_val_score(lr, X, y, cv=kfold)
+print(results.mean())
+
+
+Ridge Regression:
+--------------------------------------------
+## Ridge Regression
+
+ridge = Ridge()
+kfold = KFold(n_splits=5, shuffle=True, random_state=2023)
+params = { 'alpha': [0.01, 0.1, 0.5, 1, 2, 3, 6, 10]}
+gcv=GridSearchCV(ridge, param_grid=params, cv=kfold, scoring='r2')
+gcv.fit(X,y)
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+best_model = gcv.best_estimator_
+print(best_model.coef_) #coefficient 
+
+### LASSO
+-----------------------------------
+
+lasso = Lasso()
+kfold = KFold(n_splits=5, shuffle=True, random_state=2023)
+params = { 'alpha': [0.01, 0.1, 0.5, 1, 2, 3, 6, 10]}
+gcv=GridSearchCV(lasso, param_grid=params, cv=kfold, scoring='r2')
+gcv.fit(X,y)
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+####Elastic Net
+-----------------------------------
+elastic_net = ElasticNet()
+kfold = KFold(n_splits=5, shuffle=True, random_state=2023)
+params = { 'alpha': [0.01, 0.1, 0.5, 1, 2, 3, 6, 10],
+          'l1_ratio':[0, 0.25, 0.5, 0.75, 1]}
+gcv = GridSearchCV(elastic_net, param_grid=params, cv=kfold)
+gcv.fit(X,y)
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+Logistic Regression
+------------------------------------
+from sklearn.linear_model import LogisticRegression
+
+kfold = StratifiedKFold(n_splits=5,shuffle=True,random_state=2023)
+lr = LogisticRegression()
+params={'penalty':['l1','l2','elasticnet',None]}
+
+kfold = StratifiedKFold(n_splits=5,shuffle=True,random_state=2023)
+params={'penalty':['l1','l2','elasticnet',None]}
+warnings.filterwarnings("ignore")
+results = cross_val_score(lr,X_train,y_train,cv=kfold,scoring='roc_auc')
+print(results.mean())
+
+
+gcv = GridSearchCV(lr,param_grid=params,verbose=2,cv=kfold,scoring='roc_auc')
+gcv.fit(X_train,y_train)
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+==============================Model Ensembling==============================
+
+Voting:
+----------------------------
+
+Classifier:
+++++++++++++++
+from sklearn.ensemble import VotingClassifier
+
+svm = SVC(probability=True, kernel='rbf', random_state=2023)
+nb = GaussianNB()
+lda = LinearDiscriminantAnalysis()
+
+voting = VotingClassifier( [('SVM', svm), ('NB', nb), ('LDA', lda)], voting = 'soft')
+voting.fit(X_train, y_train)
+y_pred = voting.predict(X_test)
+
+y_pred_prob = voting.predict_proba(X_test)[:,1]
+
+from sklearn.ensemble import VotingClassifier
+
+svm = SVC(probability=True, kernel='rbf', random_state=2023)
+nb = GaussianNB()
+lda = LinearDiscriminantAnalysis()
+
+voting = VotingClassifier( [('SVM', svm), ('NB', nb), ('LDA', lda)], voting = 'soft')
+voting.fit(X_train, y_train)
+y_pred = voting.predict(X_test)
+
+y_pred_prob = voting.predict_proba(X_test)[:,1]
+
+### Using KFold
+
+svm = SVC(probability=True, kernel='linear', random_state=2023)
+nb = GaussianNB()
+lda = LinearDiscriminantAnalysis()
+
+kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=2023)
+
+voting = VotingClassifier([('SVM', svm), ("NB", nb), ("LDA", lda)], voting='soft')
+
+results = cross_val_score(voting, X, y, cv=kfold, scoring='roc_auc')
+
+print(results.mean())
+
+### Using Grid Search
+
+voting = VotingClassifier([('SVM', svm), ("NB", nb), ("LDA", lda)], voting='soft')
+
+params = {'SVM__C': [0.01, 0.1, 0.5, 1, 1.5, 2]}
+
+gcv = GridSearchCV(voting, param_grid=params, cv=kfold, scoring='roc_auc')
+
+gcv.fit(X, y)
+
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+Regressor:
+++++++++++++++++++
+from sklearn.ensemble import VotingRegressor
+
+lr = LinearRegression()
+elastic = ElasticNet()
+dtr = DecisionTreeRegressor(random_state=2023)
+
+voting = VotingRegressor( [('LR', lr), ('ELASTIC', elastic), ('DT', dtr)])
+voting.fit(X_train, y_train)
+y_pred = voting.predict(X_test)
+
+### KFold CV
+
+lr = LinearRegression()
+elastic = ElasticNet()
+dtr = DecisionTreeRegressor(random_state=2023)
+
+kfold = KFold(n_splits=5, shuffle=True, random_state=2023)
+
+voting = VotingRegressor( [('LR', lr), ('ELASTIC', elastic), ('DT', dtr)])
+
+results = cross_val_score(voting, X, y, cv=kfold)
+
+print(results.mean())
+
+#### With Weights (Use R2 score of each model as weights)
+
+lr = LinearRegression()
+elastic = ElasticNet()
+dtr = DecisionTreeRegressor(random_state=2023)
+
+kfold = KFold(n_splits= 5, shuffle = True, random_state=2023)
+results = cross_val_score(dtr, X, y, cv=kfold)
+
+r2_dtr = results.mean()
+
+results = cross_val_score(lr, X, y, cv=kfold)
+
+r2_lr = results.mean()
+
+results = cross_val_score(elastic, X, y, cv=kfold)
+
+r2_elastic = results.mean()
+
+
+
+kfold = KFold(n_splits=5, shuffle=True, random_state=2023)
+
+voting = VotingRegressor( [('LR', lr), ('ELASTIC', elastic), ('DT', dtr)], weights=[r2_lr, r2_elastic, r2_dtr])
+
+results = cross_val_score(voting, X, y, cv=kfold)
+
+print(results.mean())
+
+### Using Grid Search
+
+
+
+params = {'DT__max_depth': [None, 3, 4, 5],
+          'DT__min_samples_split':[2, 5, 10],
+          'DT__min_samples_leaf':[1, 4, 10],
+          'ELASTIC__alpha': np.linspace(0, 10, 5),
+          'ELASTIC__l1_ratio': np.linspace(0, 1, 5)
+}
+
+gcv = GridSearchCV(voting, param_grid=params, cv=kfold, scoring='r2')
+
+gcv.fit(X, y)
+
+
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+
+Bagging:
+--------------------------
+
+Classifier:
++++++++++++++
+from sklearn.ensemble import BaggingClassifier
+
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+
+lda = LinearDiscriminantAnalysis()
+
+bagging = BaggingClassifier(base_estimator = lda, random_state = 2023, n_estimators = 15)
+bagging.fit(X_train, y_train)
+
+y_pred = bagging.predict(X_test)
+print(accuracy_score(y_test, y_pred))
+
+y_pred_proba = bagging.predict_proba(X_test)[:,1]
+print(roc_auc_score(y_test, y_pred_proba))
+
+### Grid Search CV
+
+
+
+kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=2023)
+bagging = BaggingClassifier(random_state = 2023, n_estimators = 15)
+
+params ={'base_estimator': [lr, nb, lda]}
+    
+gcv = GridSearchCV(bagging, param_grid=params, cv=kfold, scoring='roc_auc')
+
+gcv.fit(X, y)
+
+
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+Regressor:
+++++++++++++++++
+from sklearn.ensemble import BaggingRegressor
+
+kfold = KFold(n_splits=5, shuffle=True, random_state=2023)
+bagging = BaggingRegressor(random_state = 2023, n_estimators = 15, n_jobs=-1)
+
+
+lr = LinearRegression()
+lasso = Lasso()
+ridge = Ridge()
+elastic = ElasticNet()
+tree = DecisionTreeRegressor(random_state=2023)
+
+params ={'base_estimator': [lr, lasso, ridge, elastic, tree]}
+
+gcv = GridSearchCV(bagging, param_grid=params, cv=kfold, n_jobs=-1)
+
+gcv.fit(X, y)
+
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+
+Boosting:
+------------------------------------------------------
+
+Gradient Bosting Classifier:
+++++++++++++++++++
+from sklearn.ensemble import GradientBoostingClassifier
+
+kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=2023)
+gbm = GradientBoostingClassifier(random_state=2023)
+
+params ={'learning_rate':[0.1, 0.15, 0.3, 0.35, 0.4, 0.5],
+         'n_estimators':[25, 50, 75],
+         'max_depth':[2,3,4,5]}
+    
+gcv = GridSearchCV(gbm, param_grid=params, cv=kfold, scoring='roc_auc')
+
+gcv.fit(X, y)
+
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+best_model = gcv.best_estimator_
+imps = best_model.feature_importances_
+cols = X.columns
+plt.figure(figsize = (15,10))
+s_index = np.argsort(imps)
+sorted_imps=imps[s_index]
+sorted_x = cols[s_index]
+plt.barh(sorted_x, sorted_imps)
+plt.title("Features Importance Plot")
+plt.show()
+
+
+Gradient Bosting Regressor:
+++++++++++++++++++
+
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.ensemble import HistGradientBoostingRegressor
+
+kfold = KFold(n_splits=5, shuffle=True, random_state=2023)
+gbm = GradientBoostingRegressor(random_state=2023)
+
+params ={'learning_rate':np.linspace(0.01,0.6,5),
+         'n_estimators':[15,30,50,75],
+         'max_depth':[2,3,4,5]}
+    
+gcv = GridSearchCV(gbm, param_grid=params, cv=kfold)
+
+gcv.fit(X, y)
+
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+best_model = gcv.best_estimator_
+imps = best_model.feature_importances_
+cols = X.columns
+plt.figure(figsize = (15,10))
+s_index = np.argsort(imps)
+sorted_imps=imps[s_index]
+sorted_x = cols[s_index]
+plt.barh(sorted_x, sorted_imps)
+plt.title("Features Importance Plot")
+plt.show()
+
+### With Hist Gradient Regressor
+
+kfold = KFold(n_splits=5, shuffle=True, random_state=2023)
+hgbm = HistGradientBoostingRegressor(random_state=2023)
+
+params ={'learning_rate':np.linspace(0.01,0.6,5),
+         'max_iter':[15,30,50,75],
+         'max_depth':[2,3,4,5]
+}
+    
+    
+gcv = GridSearchCV(hgbm, param_grid=params, cv=kfold)
+
+gcv.fit(X, y)
+
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+Extream Gradient Boost:
+----------------------------------------------------
+# **XGBoost**
+
+from xgboost import XGBClassifier
+
+kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=2023)
+xgb = XGBClassifier(random_state=2023)
+
+params ={'learning_rate':[0.1, 0.15, 0.3, 0.35, 0.4, 0.5],
+         'n_estimators':[25, 50, 75],
+         'max_depth':[2,3,4,5]}
+    
+gcv = GridSearchCV(xgb, param_grid=params, cv=kfold, scoring='roc_auc')
+
+gcv.fit(X, y)
+
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+# **Cat Boost**
+
+!pip install catboost
+
+from catboost import CatBoostClassifier
+
+kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=2023)
+cat_gbm =CatBoostClassifier(random_state=2023)
+
+params ={'learning_rate':[0.1, 0.15, 0.3, 0.35, 0.4, 0.5],
+         'n_estimators':[25, 50, 75],
+         'max_depth':[2,3,4,5]}
+    
+gcv = GridSearchCV(cat_gbm, param_grid=params, cv=kfold, scoring='roc_auc')
+
+gcv.fit(X, y)
+
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+# **LightGBM**
+
+!pip install lightgbm
+
+from lightgbm import LGBMClassifier
+
+kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=2023)
+lgbm =LGBMClassifier(random_state=2023)
+
+params ={'learning_rate':[0.1, 0.15, 0.3, 0.35, 0.4, 0.5],
+         'n_estimators':[25, 50, 75],
+         'max_depth':[2,3,4,5]}
+    
+gcv = GridSearchCV(lgbm, param_grid=params, cv=kfold, scoring='roc_auc')
+
+gcv.fit(X, y)
+
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+
+Stacking:
+--------------------------------------------------------------------------
+
+Classifier:
++++++++++++++++++++++
+from sklearn.ensemble import StackingClassifier
+
+nb = GaussianNB()
+svm_l = SVC(probability=True, kernel='linear', random_state=2023)
+lr = LogisticRegression()
+gbm = GradientBoostingClassifier(random_state=2023)
+
+
+stack = StackingClassifier(estimators=[('NB',nb),('SVM',svm_l),('LR',lr)], final_estimator=gbm, stack_method='predict_proba')
+
+stack.fit(X_train, y_train)
+y_pred = stack.predict(X_test)
+
+
+print(accuracy_score(y_test, y_pred))
+
+y_pred_prob = stack.predict_proba(X_test)[:,1]
+print(roc_auc_score(y_test, y_pred_prob))
+
+### With Passthrough
+
+stack = StackingClassifier(estimators=[('NB',nb),('SVM',svm_l),('LR',lr)], final_estimator=gbm, passthrough=True, stack_method='predict_proba')
+stack.fit(X_train, y_train)
+y_pred = stack.predict(X_test)
+
+print(f"Accuracy Score:: {accuracy_score(y_test, y_pred)}")
+y_pred_prob = stack.predict_proba(X_test)[:,1]
+print(f"ROC and AUC Score::{roc_auc_score(y_test, y_pred_prob)}")
+
+### Using GridSearch
+
+kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=2023)
+
+params = { 'SVM__C': np.linspace(0.01,10,5),
+          'LR__penalty':['l1','l2','elasticnet', None]
+}
+
+gcv = GridSearchCV(stack, param_grid=params, cv=kfold, scoring='roc_auc')
+
+gcv.fit(X, y)
+
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+Regressor:
++++++++++++++++
+from sklearn.ensemble import StackingRegressor
+lr = LinearRegression()
+elastic = ElasticNet()
+dtr = DecisionTreeRegressor(random_state=2023)
+xgb = XGBRegressor(random_state=2023)
+
+kfold = KFold(n_splits=5, shuffle=True, random_state=2023)
+
+stack = StackingRegressor(estimators=[('LR',lr),('ELASTIC',elastic),('DT',dtr)], final_estimator=xgb, passthrough=True, cv=kfold, n_jobs=-1)
+
+print(stack.get_params())
+
+params = { 'ELASTIC__alpha':  np.linspace(0.001, 10, 5),
+          'ELASTIC__l1_ratio' : np.linspace(0, 1, 5),
+          'DT__max_depth' : [None, 2, 4],
+          'DT__min_samples_split':[2, 5, 10],
+          'DT__min_samples_leaf':[1, 4],
+          'final_estimator__n_estimators': [20, 50],
+          'final_estimator__learning_rate': np.linspace(0.01, 0.5, 5),
+          'final_estimator__max_depth': [3, 5]
+          
+}
+
+gcv = GridSearchCV(stack, param_grid=params, cv=kfold, n_jobs=-1, scoring='r2')
+
+gcv.fit(X, y)
+
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+===============================Random Forest===================================================
+
+
+Classifier:
+----------------------------------------
+from sklearn.ensemble import RandomForestClassifier
+
+kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=2023)
+rf = RandomForestClassifier(random_state = 2023)
+
+params ={'max_features': [3, 4, 5, 6, 7],
+         'n_estimators':[25, 50, 75]}
+    
+gcv = GridSearchCV(rf, param_grid=params, cv=kfold, scoring='roc_auc', n_jobs=-1)
+
+gcv.fit(X, y)
+
+
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+best_model = gcv.best_estimator_
+imps = best_model.feature_importances_
+cols = X.columns
+plt.figure(figsize = (16,6))
+plt.barh(cols, imps)
+plt.title("Features Importance Plot")
+plt.show()
+
+
+Regressor:
+---------------------------------------
+from sklearn.ensemble import RandomForestRegressor
+
+kfold = KFold(n_splits=5, shuffle=True, random_state=2023)
+rf = RandomForestRegressor(random_state = 2023)
+
+params ={'max_features': [3, 4, 5, 6, 7],
+         'n_estimators':[25, 50, 75]}
+    
+gcv = GridSearchCV(rf, param_grid=params, cv=kfold, n_jobs=-1)
+
+gcv.fit(X, y)
+
+print(gcv.best_params_)
+print(gcv.best_score_)
+
+best_model = gcv.best_estimator_
+imps = best_model.feature_importances_
+cols = X.columns
+plt.figure(figsize = (16,6))
+plt.barh(cols, imps)
+plt.title("Features Importance Plot")
+plt.show()
+
+
+===========================================Clustering==================================================
+
+Hierarchical:
+-----------------------
+from scipy.cluster.hierarchy import linkage, dendrogram
+
+mergings =  linkage(milkscaled, method = 'average')
+plt.figure(figsize=(12,8))
+
+dendrogram(
+    mergings,
+    labels=np.array(milk.index),
+    leaf_rotation=45,
+    leaf_font_size=10
+)
+
+plt.show()
+
+mergings =  linkage(milkscaled, method = 'single')
+plt.figure(figsize=(12,8))
+
+dendrogram(
+    mergings,
+    labels=np.array(milk.index),
+    leaf_rotation=45,
+    leaf_font_size=10
+)
+
+plt.show()
+
+mergings =  linkage(milkscaled, method = 'centroid')
+plt.figure(figsize=(12,8))
+
+dendrogram(
+    mergings,
+    labels=np.array(milk.index),
+    leaf_rotation=45,
+    leaf_font_size=10
+)
+
+plt.show()
+
+KMeans:
+-----------------------------------------
+from sklearn.cluster import KMeans
+
+## With WSS
+++++++++++++++
+km = KMeans(n_clusters = 5, random_state=2023)
+km.fit(milkscaled)
+
+labels = km.predict(milkscaled)
+print(labels)
+
+milk['Cluster'] = labels
+
+wss = []
+for i in range(2,11):
+  km = KMeans(n_clusters = i, random_state=2023)
+  km.fit(milkscaled)
+  wss.append(km.inertia_)
+
+plt.plot(np.arange(2,11), wss)
+plt.scatter(np.arange(2,11), wss)
+plt.xlabel("No. of Clusters")
+plt.ylabel("Within sum of squared")
+
+km = KMeans(n_clusters = 4, random_state=2023)
+km.fit(milkscaled)
+
+labels = km.predict(milkscaled)
+print(labels)
+
+milk['Cluster'] = labels
+milk = milk.sort_values(by='Cluster')
+
+
+milk.groupby('Cluster').mean()
+
+### with SIlhoutte
+++++++++++++++++++
+
+from sklearn.metrics import silhouette_score
+
+km = KMeans(n_clusters = 4, random_state=2023)
+km.fit(milkscaled)
+
+labels = km.predict(milkscaled)
+silhouette_score(milkscaled, labels)
+
+sil = []
+for i in np.arange(2,11):
+  km = KMeans(n_clusters = i, random_state=2023)
+  km.fit(milkscaled)
+
+  labels = km.predict(milkscaled)
+  sil.append(silhouette_score(milkscaled, labels))
+
+i_max = np.argmax(sil)
+Ks = np.arange(2,11)
+best_k = Ks[i_max]
+print("Best K: ", best_k)
+print("Best Score: ", np.max(sil))
+
+km = KMeans(n_clusters = best_k, random_state=2023)
+km.fit(milkscaled)
+
+labels = km.predict(milkscaled)
+
+## DBSCAN
+++++++++++++++++++++++
+from sklearn.cluster import DBSCAN
+
+dbs = DBSCAN(eps = 0.8, min_samples = 3)
+dbs.fit(milkscaled)
+print(dbs.labels_)
+
+milk['Cluster'] = dbs.labels_
+milk
+
+# kfold = KFold(n_splits = 5, shuffle = True, random_state = 2023)
+# dbs = DBSCAN()
+
+# params = {'eps': np.linspace(0.01, 1, 10),
+#           'min_samples': [2, 3, 4, 5]
+# }
+
+# gcv = GridSearchCV(dbs)
+
+eplison = np.linspace(0.01, 1, 10)
+min_points = [2,3,4,5]
+sil = []
+
+for i in eplison:
+  for j in min_points:
+    dbs = DBSCAN(eps = i, min_samples = j)
+    dbs.fit(milkscaled)
+    dbs.labels_
+    if len(set(dbs.labels_)) >= 3:
+      score = silhouette_score(milkscaled, dbs.labels_)
+      lst = [i, j, score]
+      sil.append(lst)
+
+pd_params = pd.DataFrame(sil, columns = ['eps', 'min_pts', 'sil_score'])
+
+pd_params = pd_params.sort_values(by = 'sil_score', ascending=False)
+
+pd_params
+
+dbs = DBSCAN(eps = 1, min_samples = 3)
+dbs.fit(milkscaled)
+print(dbs.labels_)
+
+silhouette_score(milkscaled, dbs.labels_)
+
+milk['Cluster'] = dbs.labels_
+milk
+
+
+
+
+
+
